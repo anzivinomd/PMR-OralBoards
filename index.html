@@ -5,94 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PM&R Oral Board Simulator V31</title>
     <style>
-    :root {
-        --primary: #1e293b;
-        --accent: #3b82f6;
-        --success: #10b981;
-        --bg: #f8fafc;
-        --card-bg: #ffffff;
-        --text-main: #334155;
-        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; }
+        .dashboard-header { text-align: center; margin-bottom: 30px; }
+        .menu-title { font-size: 1.4rem; font-weight: bold; border-bottom: 2px solid #ccc; padding-bottom: 8px; margin-bottom: 15px; }
+        .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .case-card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s; position: relative; }
+        .case-card:hover { border-color: var(--accent); background: #fcfcfc; }
+        .case-card.completed { border: 2px solid var(--success); background: #f0fff4; }
+        .case-card.completed::after { content: "✓ Completed"; position: absolute; top: 10px; right: 10px; color: var(--success); font-size: 0.8rem; font-weight: 	bold; }
+	/* Undo Button Styling */
+	.undo-btn {
+	    margin-top: 15px;
+	    padding: 8px 15px;
+	    background: #e74c3c;
+	    color: white;
+	    border: none;
+	    border-radius: 4px;
+	    cursor: pointer;
+	    font-size: 0.9rem;
+	    transition: 0.3s;
+	}
+	.undo-btn:hover { background: #c0392b; }
+        #exam-feed { display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px; }
+        .section-block { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); animation: fadeIn 0.3s ease; }
+        .domain-label { color: #95a5a6; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .clinical-lead-in { background: #f8f9fa; border-left: 4px solid #34495e; padding: 15px; margin-bottom: 15px; font-style: italic; font-size: 1rem; color: #2c3e50; white-space: pre-line; }
+        .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--primary); }
+        textarea { width: 100%; height: 100px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; box-sizing: border-box; resize: none; font-family: inherit; margin-bottom: 10px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-submit { background: var(--accent); color: white; }
+        .btn-home { background: #7f8c8d; color: white; width: auto; margin-bottom: 20px; }
+        .rubric-area { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .rubric-title { color: var(--success); font-weight: bold; margin-bottom: 10px; display: block; }
+        .checklist { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.95rem; }
+        .text-rubric { background: #fdfdfd; padding: 15px; border: 1px solid #eee; font-size: 1rem; white-space: pre-line; line-height: 1.6; }
+        .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
+/* This makes the Undo button only appear on green 'completed' cards */
+.undo-btn-dashboard {
+    display: none; 
+    margin-top: 12px;
+    background: #fff;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-    body {
-        font-family: 'Inter', -apple-system, sans-serif;
-        background: var(--bg);
-        margin: 0;
-        padding: 20px;
-        color: var(--text-main);
-    }
+.case-card.completed .undo-btn-dashboard {
+    display: inline-block;
+}
 
-    .container { max-width: 1000px; margin: auto; }
-
-    /* DASHBOARD STYLES */
-    #dashboard { display: block; } /* Ensure dashboard is visible initially */
-    .dashboard-header h1 { color: var(--primary); text-align: center; }
-    
-    .case-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-    }
-
-    .case-card {
-        background: var(--card-bg);
-        padding: 24px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-shadow: var(--shadow);
-        cursor: pointer;
-    }
-
-    .case-card.completed { border-left: 6px solid var(--success); background: #f0fdf4; }
-
-    /* CASE VIEW STYLES - THIS IS THE FIX */
-    #case-view {
-        display: none; /* JavaScript will change this to 'block' */
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-        margin-top: 20px;
-        border: 1px solid #e2e8f0;
-        min-height: 300px; /* Ensures it doesn't look empty */
-    }
-
-    #case-content {
-        display: block !important;
-        color: #1e293b !important; /* Forces dark text color */
-        font-size: 1.1rem;
-    }
-
-    .step-container {
-        margin-bottom: 25px;
-        padding: 20px;
-        background: #f1f5f9;
-        border-left: 5px solid var(--accent);
-        border-radius: 8px;
-    }
-
-    .rubric-box {
-        margin-top: 15px;
-        padding: 15px;
-        background: #ecfdf5;
-        border: 1px solid var(--success);
-        border-radius: 8px;
-        color: #065f46;
-    }
-
-    button {
-        padding: 10px 20px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-
-    .btn-reveal { background: var(--accent); color: white; margin-top: 10px; }
-    .btn-back { background: #64748b; color: white; margin-bottom: 20px; }
-</style>
+.undo-btn-dashboard:hover {
+    background: #e74c3c;
+    color: white;
+}
+    </style>
 </head>
 <body>
 
@@ -103,14 +77,16 @@
     <div id="progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.5s ease-in-out;"></div>
     <span id="progress-text" style="position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 0.75rem; line-height: 20px; font-weight: bold; color: #2c3e50;">0/50 Cases (0%)</span>
 </div>
-       <div class="filter-container">
-    <button class="filter-btn active" onclick="filterSelection('all')">All Cases</button>
-    <button class="filter-btn" onclick="filterSelection('TBI/Stroke')">Brain Injury</button>
-    <button class="filter-btn" onclick="filterSelection('SCI')">Spinal Cord</button>
-    <button class="filter-btn" onclick="filterSelection('MSK/Pain')">MSK/Pain</button>
-    <button class="filter-btn" onclick="filterSelection('Amputee')">Amputee</button>
-    <button class="filter-btn" onclick="filterSelection('Other')">Other</button>
-</div>
+        <div class="menu-title">Master Case List</div>
+	<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+	    <button class="btn" style="width: auto;" onclick="filterSelection('all')">Show All</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('SCI')">SCI</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('TBI/Stroke')">TBI/Stroke</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('MSK/Pain')">MSK/Pain</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('Amputee')">Amputee</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('Neuro')">Neuro</button>
+	    <button class="btn" style="width: auto;" onclick="filterSelection('Other')">Other</button>
+	</div>
        <div class="case-grid">
     <div class="case-card" data-category="Neuro" id="card-0" onclick="launchCase(0)"><h3>Case 1: Right Hand Numbness</h3><button class="undo-btn-dashboard" onclick="undoComplete(event, 0)">Undo Completion</button></div>
     <div class="case-card" data-category="Other" id="card-1" onclick="launchCase(1)"><h3>Case 2: Weakness in a Child</h3><button class="undo-btn-dashboard" onclick="undoComplete(event, 1)">Undo Completion</button></div>
@@ -4825,14 +4801,15 @@ function renderStep() {
     // ... rest of your existing renderStep code ...
 }
 
-function launchCase(idx) {
-    currentCaseIdx = idx;
-    currentStepIdx = 0;
-    document.getElementById('dashboard').style.display = 'none';
-    const view = document.getElementById('case-view');
-    view.style.display = 'block'; // THIS UNHIDES THE BOX
-    renderStep();
-}
+    function launchCase(idx) {
+        activeCaseGlobalIdx = idx;
+        activeCase = CASES[idx];
+        currentStepIdx = 0;
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('exam-view').classList.remove('hidden');
+        document.getElementById('exam-feed').innerHTML = '';
+        renderStep();
+    }
 
     function renderStep() {
         if (!activeCase || currentStepIdx >= activeCase.steps.length) {
@@ -4923,29 +4900,6 @@ function undoComplete(event, idx) {
         }
     }
 };
-// ... other existing functions like launchCase, renderStep, etc.
-
-    function filterSelection(category) {
-        const cards = document.getElementsByClassName("case-card");
-        const buttons = document.getElementsByClassName("filter-btn");
-        
-        // Update button active states
-        for (let btn of buttons) {
-            btn.classList.remove("active");
-            if (btn.innerText.includes(category) || (category === 'all' && btn.innerText.includes('All'))) {
-                btn.classList.add("active");
-            }
-        }
-
-        // Filter the cards
-        for (let card of cards) {
-            if (category === "all" || card.getAttribute("data-category") === category) {
-                card.style.display = "flex"; // Changed to flex to match the new CSS
-            } else {
-                card.style.display = "none";
-            }
-        }
-    }
 </script>
 </body>
 </html>
